@@ -126,7 +126,7 @@ async function validateModels() {
             Authorization: `Bearer ${NIM_API_KEY}`,
             'Content-Type': 'application/json'
           },
-          timeout: 10000
+          timeout: 30000
         }
       );
       console.log(`[VALIDATION] ✓ ${alias} → ${nimId}`);
