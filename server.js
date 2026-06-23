@@ -254,13 +254,9 @@ function extractThinkingContent(message) {
   let reasoning = message.reasoning_content || null;
   let isPromoted = false;
   
-  if (!content && reasoning) {
-    content = reasoning;
-    reasoning = null;
-    isPromoted = true;
-  }
-  
-  if (content && content.includes('<thinking>')) {
+  // If NIM didn't populate reasoning_content, try to extract from content
+  if (!reasoning && content) {
+    // Check for explicit <thinking> tags
     const thinkMatch = content.match(/<thinking>([\s\S]*?)<\/thinking>/);
     if (thinkMatch) {
       reasoning = thinkMatch[1].trim();
@@ -268,8 +264,16 @@ function extractThinkingContent(message) {
     }
   }
   
+  // If content is empty but reasoning exists, promote reasoning to content
+  if (!content && reasoning) {
+    content = reasoning;
+    reasoning = null;
+    isPromoted = true;
+  }
+  
   return { content, reasoning, isPromoted };
 }
+
 
 // PATCH: ─── Helper: Format content with reasoning for display ─────────────
 
@@ -320,6 +324,7 @@ function buildThinkingRequest(baseRequest, modelId, enableThinking) {
       if (enableThinking) {
         // DeepSeek V4, Kimi K2.6, GLM-5, MiniMax, Step — need chat_template_kwargs at ROOT
         // NIM strictly requires this or the API hangs indefinitely
+        chatTemplateKwargs.enable_thinking = true;
         chatTemplateKwargs.thinking = true;
         
         // DeepSeek V4 specifically supports configurable reasoning effort
